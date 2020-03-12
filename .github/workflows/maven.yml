@@ -6,8 +6,8 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        os: [windows-latest, ubuntu-latest]
-        java: [1.8, 11, 13]
+        os: [ubuntu-latest]
+        java: [1.8]
     steps:
       - uses: actions/checkout@v2
       - name: Set up PHP with Composer
