@@ -52,6 +52,10 @@ public class Repository {
         this.storage = storage;
     }
 
+    public Packages packages() {
+        return packages(new Key.From("packages.json"));
+    }
+
     /**
      * Reads packages description from storage.
      *
@@ -59,16 +63,7 @@ public class Repository {
      * @return Packages found by name, might be empty.
      */
     public Packages packages(final Name name) {
-        final Key key = name.key();
-        final BlockingStorage blocking = new BlockingStorage(this.storage);
-        final JsonPackages packages;
-        if (blocking.exists(key)) {
-            final ByteSource content = ByteSource.wrap(blocking.value(key));
-            packages = new JsonPackages(content);
-        } else {
-            packages = new JsonPackages();
-        }
-        return packages;
+        return packages(name.key());
     }
 
     /**
@@ -82,8 +77,23 @@ public class Repository {
         final ByteSource content = ByteSource.wrap(new BlockingStorage(this.storage).value(key));
         final Package pack = new JsonPackage(content);
         final Name name = pack.name();
-        return this.packages(name)
+        final CompletableFuture<Void> save2 = this.packages().add(pack).save(
+            this.storage, new Key.From("packages.json"));
+        final CompletableFuture<Void> save1 = this.packages(name)
             .add(pack)
             .save(this.storage, name.key());
+        return CompletableFuture.allOf(save1, save2);
+    }
+
+    private Packages packages(final Key key) {
+        final BlockingStorage blocking = new BlockingStorage(this.storage);
+        final JsonPackages packages;
+        if (blocking.exists(key)) {
+            final ByteSource content = ByteSource.wrap(blocking.value(key));
+            packages = new JsonPackages(content);
+        } else {
+            packages = new JsonPackages();
+        }
+        return packages;
     }
 }

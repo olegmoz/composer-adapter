@@ -66,7 +66,7 @@ class RepositoryHttpIT {
     }
 
     @Test
-    @Disabled("Not implemented")
+    //@Disabled("Not implemented")
     void shouldInstallAddedPackage() throws Exception {
         //todo: add package to repo via HTTP
         Files.write(
